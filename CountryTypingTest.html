@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>apna word · typing test</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0b0e14 0%, #1a1f2c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            padding: 16px;
+        }
+
+        .test-container {
+            background: rgba(18, 22, 30, 0.9);
+            backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 40px 36px;
+            max-width: 1000px;
+            width: 100%;
+            box-shadow: 0 30px 45px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            color: #eef3fc;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-left: 8px;
+            flex-wrap: wrap;
+        }
+
+        h1 span {
+            background: #2a3140;
+            padding: 6px 18px;
+            font-size: 1rem;
+            border-radius: 60px;
+            font-weight: 400;
+            color: #b9c8e6;
+            border: 1px solid #3d4559;
+            letter-spacing: 0.3px;
+        }
+
+        .current-word-panel {
+            background: #0b0f17;
+            border-radius: 28px;
+            padding: 28px 24px;
+            margin-bottom: 26px;
+            border: 1px solid #242b38;
+            box-shadow: 0 12px 24px -12px #00000080;
+            text-align: center;
+        }
+
+        .word-display {
+            font-size: 4rem;
+            font-weight: 600;
+            letter-spacing: 4px;
+            color: #e2e9f5;
+            word-break: break-word;
+            line-height: 1.3;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            font-family: 'Fira Mono', 'JetBrains Mono', monospace;
+            transition: all 0.1s ease;
+        }
+
+        .word-display.correct-highlight {
+            color: #9fda8f;
+            text-shadow: 0 0 12px #3f8740;
+        }
+
+        .word-display.skip-highlight {
+            color: #f0c674;
+            text-shadow: 0 0 12px #b88a2c;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            padding: 0 10px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #151b26;
+            padding: 8px 20px;
+            border-radius: 40px;
+            border: 1px solid #2a3140;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6b7d9c;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: #d6e3ff;
+            font-family: 'Fira Mono', monospace;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 28px;
+        }
+
+        .typing-input {
+            width: 100%;
+            background: #0e121b;
+            border: 2px solid #2f394b;
+            border-radius: 28px;
+            padding: 22px 28px;
+            font-size: 1.6rem;
+            font-family: 'Fira Mono', 'JetBrains Mono', monospace;
+            color: #eef3fc;
+            outline: none;
+            transition: 0.15s;
+            letter-spacing: 1.5px;
+            box-shadow: 0 10px 20px -10px #000000b0;
+        }
+
+        .typing-input:focus {
+            border-color: #6d8ec9;
+            background: #121a28;
+            box-shadow: 0 0 0 5px rgba(109, 142, 201, 0.2);
+        }
+
+        .typing-input.correct-glow {
+            border-color: #6fae6f;
+            box-shadow: 0 0 0 5px rgba(111, 174, 111, 0.2);
+            background: #111c16;
+        }
+
+        .typing-input.error-glow {
+            border-color: #c76b6b;
+            box-shadow: 0 0 0 5px rgba(199, 107, 107, 0.2);
+            background: #1a1214;
+        }
+
+        .actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .actions button {
+            background: #1f2736;
+            border: 1px solid #364153;
+            border-radius: 60px;
+            padding: 14px 34px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #c9d7f0;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 10px -6px #00000080;
+        }
+
+        .actions button:hover {
+            background: #2d384b;
+            border-color: #5b6d8a;
+            color: #ffffff;
+        }
+
+        .actions button:active {
+            transform: scale(0.97);
+        }
+
+        .actions button.skip-btn {
+            background: #2d2a1f;
+            border-color: #5a4d2e;
+            color: #f0d9a0;
+        }
+
+        .actions button.skip-btn:hover {
+            background: #3d3826;
+            border-color: #7a6838;
+            color: #ffe8b0;
+        }
+
+        .message-box {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 0.95rem;
+            min-height: 28px;
+            color: #8a9bb8;
+            letter-spacing: 0.3px;
+            font-style: italic;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 0.8rem;
+            color: #4b576b;
+            letter-spacing: 0.6px;
+        }
+
+        .accent-badge {
+            color: #84a6e0;
+            font-weight: 500;
+        }
+
+        .progress-badge {
+            background: #1a2230;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            color: #8da1c7;
+            border: 1px solid #2c384b;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="test-container">
+    <h1>
+        ⌨️ apna word
+        <span>typing test</span>
+        <span class="progress-badge" id="progressBadge">1 / 1000</span>
+    </h1>
+
+    <!-- current word display -->
+    <div class="current-word-panel">
+        <div class="word-display" id="wordDisplay">access</div>
+    </div>
+
+    <!-- stats -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-label">accuracy</span>
+            <span class="stat-value" id="accuracyStat">100%</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">errors</span>
+            <span class="stat-value" id="errorStat">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">typed</span>
+            <span class="stat-value" id="typedStat">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">skipped</span>
+            <span class="stat-value" id="skippedStat">0</span>
+        </div>
+    </div>
+
+    <!-- typing area -->
+    <div class="input-wrapper">
+        <input type="text" id="typingInput" class="typing-input" placeholder="type here..." autocomplete="off" spellcheck="false" autofocus>
+    </div>
+
+    <!-- actions -->
+    <div class="actions">
+        <button id="skipBtn" class="skip-btn" title="Skip this word (Alt + S)">
+            <span>⏭</span> Skip word
+        </button>
+        <button id="restartBtn" title="Restart entire test">
+            <span>⟳</span> Restart test
+        </button>
+    </div>
+
+    <div id="messageBox" class="message-box"></div>
+    <div class="footer-note">press <span class="accent-badge">Alt + S</span> to skip · word auto-changes when typed correctly</div>
+</div>
+
+<script>
+    // ============================================================
+    // YAHAN APNE SAARE 1000 WORDS PASTE KARO
+    // (bilkul waise hi jaise aapke paas hain - new line se separated)
+    // Koi comma ya quote lagane ki zaroorat nahi!
+    // ============================================================
+    const RAW_WORDS = `
+Afghanistan
+Albania
+Algeria
+Andorra
+Angola
+Antigua and Barbuda
+Argentine
+Armenia
+Australia
+Austria
+Azerbaijan
+Bahamas
+Bahrain
+Bangladesh
+Barbados
+Belarus
+Belgium
+Belize
+Benin
+Bhutan
+Bolivia
+Bosnia and Herzegovina
+Botswana
+Brazil
+Brunei
+Bulgaria
+Burkina Faso
+Burundi
+Cambodia
+Cameroon
+Canada
+Cape Verde
+Central African Republic
+Chad
+Chile
+China
+Colombia
+Comoros
+Republic of Congo
+Democratic Republic of the Congo
+Cook
+Costa Rica
+Cote d Ivoire
+Croatia
+Cuba
+Cyprus
+Czech Republic
+Page Top
+Denmark
+Djibouti
+Dominica
+Dominican Republic
+Ecuador
+Egypt
+El Salvador
+Equatorial Guinea
+Eritrea
+Estonia
+Eswatini
+Ethiopia
+Fiji
+Finland
+France
+Gabon
+Gambia
+Georgia
+Germany
+Ghana
+Greece
+Grenada
+Guatemala
+Guinea
+Guinea-Bissau
+Guyana
+Haiti
+Honduras
+Hungary
+Iceland
+India
+Indonesia
+Iran
+Iraq
+Ireland
+Israel
+Italy
+Jamaica
+Jordan
+Page Top
+Kazakhstan
+Kenya
+Kiribati
+Republic of Korea
+Kosovo
+Kuwait
+Kyrgyz Republic
+Laos
+Latvia
+Lebanon
+Lesotho
+Liberia
+Libya
+Liechtenstein
+Lithuania
+Luxembourg
+Madagascar
+Malawi
+Malaysia
+Maldives
+Mali
+Malta
+Marshall
+Mauritania
+Mauritius
+Mexico
+Micronesia
+Moldova
+Monaco
+Mongolia
+Montenegro
+Morocco
+Mozambique
+Myanmar
+Namibia
+Nauru
+Nepal
+Netherlands
+New Zealand
+Nicaragua
+Niger
+Nigeria
+Niue
+North Macedonia
+Norway
+Oman
+Page Top
+Pakistan
+Palau
+Panama
+Papua New Guinea
+Paraguay
+Peru
+Philippines
+Poland
+Portugal
+Qatar
+Romania
+Russia
+Rwanda
+Saint Christopher and Nevis
+Saint Lucia
+Saint Vincent
+Samoa
+San Marino
+Sao Tome and Principe
+Saudi Arabia
+Senegal
+Serbia
+Seychelles
+Sierra Leone
+Singapore
+Slovakia
+Slovenia
+Solomon
+Somalia
+Republic of South Africa
+South Sudan
+Spain
+Sri Lanka
+Sudan
+Suriname
+Sweden
+Switzerland
+Syria
+Tajikistan
+Tanzania
+Thailand
+Timor-Leste
+Togo
+Tonga
+Trinidad and Tobago
+Tunisia
+Republic of Türkiye
+Turkmenistan
+Tuvalu
+Uganda
+Ukraine
+United Arab Emirates
+United Kingdom
+United States of America
+Uruguay
+Uzbekistan
+Vanuatu
+Vatican
+Venezuela
+Viet Nam
+Yemen
+Zambia
+Zimbabwe
+    `;
+    // ============================================================
+
+    // Automatically words ko array me convert karo
+    const WORD_LIST = RAW_WORDS
+        .split(/[\n\r,]+/)           // new line ya comma se split
+        .map(w => w.trim())          // extra spaces hatao
+        .filter(w => w.length > 0);  // empty lines hatao
+
+    // ----- DOM elements -----
+    const wordDisplay = document.getElementById('wordDisplay');
+    const typingInput = document.getElementById('typingInput');
+    const accuracyStat = document.getElementById('accuracyStat');
+    const errorStat = document.getElementById('errorStat');
+    const typedStat = document.getElementById('typedStat');
+    const skippedStat = document.getElementById('skippedStat');
+    const restartBtn = document.getElementById('restartBtn');
+    const skipBtn = document.getElementById('skipBtn');
+    const messageBox = document.getElementById('messageBox');
+    const progressBadge = document.getElementById('progressBadge');
+
+    // ----- state -----
+    let availableWords = [];
+    let currentWord = '';
+
+    let sessionTotalTyped = 0;
+    let sessionErrorCount = 0;
+    let sessionSkippedCount = 0;
+
+    let currentAttemptTotalTyped = 0;
+    let currentAttemptErrors = 0;
+
+    let isTransitioning = false;  // to prevent double-trigger
+
+    // ----- helper: shuffle array -----
+    function shuffleArray(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    // ----- restart entire test -----
+    function restartTest() {
+        sessionTotalTyped = 0;
+        sessionErrorCount = 0;
+        sessionSkippedCount = 0;
+        currentAttemptTotalTyped = 0;
+        currentAttemptErrors = 0;
+        isTransitioning = false;
+
+        availableWords = shuffleArray(WORD_LIST);
+
+        currentWord = availableWords.shift();
+        wordDisplay.textContent = currentWord;
+
+        typingInput.value = '';
+        typingInput.disabled = false;
+        typingInput.placeholder = 'type here...';
+        typingInput.classList.remove('correct-glow', 'error-glow');
+        wordDisplay.classList.remove('correct-highlight', 'skip-highlight');
+
+        updateStatsDisplay();
+        updateProgressBadge();
+
+        showMessage('new test started — type the word!', '#84a6e0');
+        typingInput.focus();
+    }
+
+    // ----- load next word -----
+    function loadNextWord() {
+        if (availableWords.length === 0) {
+            wordDisplay.textContent = '✓ done!';
+            wordDisplay.classList.remove('skip-highlight');
+            wordDisplay.classList.add('correct-highlight');
+            typingInput.disabled = true;
+            typingInput.placeholder = 'all words completed!';
+            showMessage('🎉 congratulations! you finished all words. press Restart to play again.', '#9fda8f');
+            progressBadge.textContent = `${WORD_LIST.length} / ${WORD_LIST.length}`;
+            return;
+        }
+
+        currentWord = availableWords.shift();
+        wordDisplay.textContent = currentWord;
+        wordDisplay.classList.remove('skip-highlight');
+
+        typingInput.value = '';
+        typingInput.classList.remove('correct-glow', 'error-glow');
+        wordDisplay.classList.remove('correct-highlight');
+
+        currentAttemptTotalTyped = 0;
+        currentAttemptErrors = 0;
+
+        updateStatsDisplay();
+        updateProgressBadge();
+
+        showMessage(`next: "${currentWord}"`, '#84a6e0');
+        typingInput.focus();
+    }
+
+    // ----- skip current word -----
+    function skipWord() {
+        if (isTransitioning) return;
+        if (typingInput.disabled) return;  // already done
+
+        isTransitioning = true;
+
+        // count as skipped
+        sessionSkippedCount++;
+        skippedStat.textContent = sessionSkippedCount;
+
+        // yellow highlight
+        wordDisplay.classList.add('skip-highlight');
+        showMessage(`⏭ skipped: "${currentWord}"`, '#f0c674');
+
+        typingInput.disabled = true;
+
+        setTimeout(() => {
+            typingInput.disabled = false;
+            loadNextWord();
+            isTransitioning = false;
+            typingInput.focus();
+        }, 300);
+    }
+
+    // ----- update stats display -----
+    function updateStatsDisplay() {
+        typedStat.textContent = sessionTotalTyped;
+        errorStat.textContent = sessionErrorCount;
+        skippedStat.textContent = sessionSkippedCount;
+
+        let accuracy = 100;
+        if (sessionTotalTyped > 0) {
+            const correct = sessionTotalTyped - sessionErrorCount;
+            accuracy = Math.max(0, Math.round((correct / sessionTotalTyped) * 100));
+        }
+        accuracyStat.textContent = accuracy + '%';
+    }
+
+    // ----- update progress badge -----
+    function updateProgressBadge() {
+        const totalWords = WORD_LIST.length;
+        const completed = totalWords - availableWords.length;
+        if (availableWords.length === 0 && currentWord === '✓ done!') {
+            progressBadge.textContent = `${totalWords} / ${totalWords}`;
+        } else if (availableWords.length === 0) {
+            progressBadge.textContent = `${totalWords} / ${totalWords}`;
+        } else {
+            const currentIndex = completed + 1;
+            progressBadge.textContent = `${Math.min(currentIndex, totalWords)} / ${totalWords}`;
+        }
+    }
+
+    // ----- show message -----
+    function showMessage(text, color = '#8a9bb8') {
+        messageBox.textContent = text;
+        messageBox.style.color = color;
+    }
+
+    // ----- input handler -----
+    function onTypingInput() {
+        if (isTransitioning) return;
+
+        const typed = typingInput.value;
+        const target = currentWord;
+
+        let attemptErrors = 0;
+        let attemptCorrect = 0;
+
+        const minLength = Math.min(typed.length, target.length);
+        for (let i = 0; i < minLength; i++) {
+            if (typed[i] === target[i]) {
+                attemptCorrect++;
+            } else {
+                attemptErrors++;
+            }
+        }
+        if (typed.length > target.length) {
+            attemptErrors += typed.length - target.length;
+        }
+
+        sessionTotalTyped = sessionTotalTyped - currentAttemptTotalTyped + typed.length;
+        sessionErrorCount = sessionErrorCount - currentAttemptErrors + attemptErrors;
+
+        currentAttemptTotalTyped = typed.length;
+        currentAttemptErrors = attemptErrors;
+
+        updateStatsDisplay();
+
+        if (typed === target && typed.length > 0) {
+            typingInput.classList.add('correct-glow');
+            typingInput.classList.remove('error-glow');
+            wordDisplay.classList.add('correct-highlight');
+
+            showMessage('✓ correct! next word...', '#9fda8f');
+
+            isTransitioning = true;
+            typingInput.disabled = true;
+
+            setTimeout(() => {
+                typingInput.disabled = false;
+                loadNextWord();
+                isTransitioning = false;
+                typingInput.focus();
+            }, 150);
+            return;
+        } else {
+            typingInput.classList.remove('correct-glow');
+            if (attemptErrors > 0) {
+                typingInput.classList.add('error-glow');
+            } else {
+                typingInput.classList.remove('error-glow');
+            }
+            wordDisplay.classList.remove('correct-highlight');
+
+            if (typed.length === 0) {
+                showMessage('', '#8a9bb8');
+            } else if (typed.length < target.length) {
+                showMessage('keep going...', '#8a9bb8');
+            } else if (typed.length >= target.length && typed !== target) {
+                showMessage('❌ not quite — fix or clear', '#c76b6b');
+            }
+        }
+
+        if (typed.length > target.length) {
+            typingInput.classList.add('error-glow');
+            wordDisplay.classList.remove('correct-highlight');
+            showMessage('⚠️ too many characters', '#c76b6b');
+        }
+
+        updateProgressBadge();
+    }
+
+    // ----- keyboard shortcut: Alt + S to skip -----
+    function onKeyDown(e) {
+        if (e.altKey && (e.key === 's' || e.key === 'S')) {
+            e.preventDefault();
+            skipWord();
+        }
+    }
+
+    // ----- init -----
+    function init() {
+        if (!WORD_LIST || WORD_LIST.length === 0) {
+            wordDisplay.textContent = 'no words!';
+            showMessage('⚠️ RAW_WORDS me words add karo', '#c76b6b');
+            return;
+        }
+
+        progressBadge.textContent = `1 / ${WORD_LIST.length}`;
+
+        availableWords = shuffleArray(WORD_LIST);
+        currentWord = availableWords.shift();
+        wordDisplay.textContent = currentWord;
+
+        sessionTotalTyped = 0;
+        sessionErrorCount = 0;
+        sessionSkippedCount = 0;
+        currentAttemptTotalTyped = 0;
+        currentAttemptErrors = 0;
+        isTransitioning = false;
+
+        typingInput.value = '';
+        typingInput.disabled = false;
+        typingInput.placeholder = 'type here...';
+        typingInput.classList.remove('correct-glow', 'error-glow');
+        wordDisplay.classList.remove('correct-highlight', 'skip-highlight');
+
+        updateStatsDisplay();
+        updateProgressBadge();
+
+        showMessage('type the word above — press Alt + S to skip', '#8a9bb8');
+        typingInput.focus();
+
+        typingInput.addEventListener('input', onTypingInput);
+        document.addEventListener('keydown', onKeyDown);
+        skipBtn.addEventListener('click', skipWord);
+        restartBtn.addEventListener('click', () => {
+            typingInput.disabled = false;
+            typingInput.placeholder = 'type here...';
+            restartTest();
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>
